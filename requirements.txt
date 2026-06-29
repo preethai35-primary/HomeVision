@@ -1,0 +1,68 @@
+# ════════════════════════════════════════════════════════
+# PHASE 1 — run these first, everything else builds on top
+# pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+# ════════════════════════════════════════════════════════
+
+# core
+python-dotenv==1.0.1
+Pillow==10.3.0
+numpy==1.26.4
+
+# LLM
+openai==1.30.1
+
+# vision (cpu)
+torch>=2.4.0
+torchvision>=0.19.0
+transformers>=4.45.0
+timm==0.9.16
+opencv-python-headless==4.9.0.80
+
+# observability
+langfuse==2.36.1
+
+# ════════════════════════════════════════════════════════
+# PHASE 2 — RAG (add after phase 1 works)
+# ════════════════════════════════════════════════════════
+# open-clip-torch==2.24.0
+# faiss-cpu==1.8.0
+# sentence-transformers==2.7.0
+
+# ════════════════════════════════════════════════════════
+# PHASE 3 — local SDXL generation (MPS / CUDA)
+# ════════════════════════════════════════════════════════
+diffusers>=0.38.0
+accelerate>=1.14.0
+safetensors>=0.8.0
+
+# ════════════════════════════════════════════════════════
+# PHASE 4 — guardrails
+# ════════════════════════════════════════════════════════
+# guardrails-ai==0.4.4
+# pydantic==2.7.2
+
+# ════════════════════════════════════════════════════════
+# PHASE 5 — evaluation
+# ════════════════════════════════════════════════════════
+# datasets==2.19.1
+# scikit-learn==1.5.0
+
+# ════════════════════════════════════════════════════════
+# PHASE 6 — API + queue
+# ════════════════════════════════════════════════════════
+# fastapi==0.111.0
+# uvicorn==0.29.0
+# celery==5.4.0
+# redis==5.0.4
+
+# ════════════════════════════════════════════════════════
+# UI (install when ready to test visually)
+# ════════════════════════════════════════════════════════
+gradio>=4.36.1
+
+# ════════════════════════════════════════════════════════
+# AGENT — LangGraph
+# ════════════════════════════════════════════════════════
+langgraph>=0.2.60
+langchain-core>=0.3.0
+langchain-openai>=0.3.0

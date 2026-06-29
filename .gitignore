@@ -1,0 +1,31 @@
+venv/
+__pycache__/
+*.pyc
+.env
+
+# generated images
+*.jpg
+*.png
+*.jpeg
+data/outputs/
+data/interior_images/
+data/colab_jobs/
+
+# model weights
+*.safetensors
+*.ckpt
+*.bin
+
+# FAISS indices and IKEA catalogue (rebuilt locally by setup script)
+*.faiss
+*.json.index
+data/ikea_products.csv
+data/ikea_meta.json
+data/clip_meta.json
+
+# LangGraph checkpointer state
+data/agent_state.db
+data/agent_state.db-shm
+data/agent_state.db-wal
+
+.DS_Store
