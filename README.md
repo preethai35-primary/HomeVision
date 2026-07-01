@@ -14,10 +14,6 @@ A single agent session on one room photo — from upload to three redesigns to c
 
 ![Input room](demo/01_input_room.jpg)
 
-**Depth map** (Depth-Anything V2 — preserves spatial layout for ControlNet)
-
-![Depth map](demo/02_depth_map.png)
-
 **Scandinavian × Modern**
 
 ![Scandinavian modern](demo/03_style_scandinavian_modern.png)
@@ -30,7 +26,7 @@ A single agent session on one room photo — from upload to three redesigns to c
 
 ![Indian contemporary](demo/05_style_indian_contemporary.png)
 
-**After chat refinement** — "make it warmer, add more plants" (img2img, strength 0.55)
+**After chat refinement** — "make it warmer" (img2img, strength 0.55)
 
 ![Refined after chat](demo/06_refined_after_chat.png)
 
