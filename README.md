@@ -68,8 +68,8 @@ Built and tested on **Apple Silicon (M5 Pro, 24 GB unified memory)** using PyTor
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/your-username/homevision-v3.git
-cd homevision-v3
+git clone https://github.com/preethai35-primary/HomeVision.git
+cd HomeVision
 
 python -m venv venv
 source venv/bin/activate          # Windows: venv\Scripts\activate
