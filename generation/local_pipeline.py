@@ -129,6 +129,55 @@ class LocalSDXLPipeline:
         elapsed = round(time.time() - t0, 1)
         print(f"Models loaded in {elapsed}s on {self.device}")
 
+    def load_lora(self, adapter_path: str, scale: float = 0.8):
+        """
+        Load a PEFT-trained LoRA adapter onto the UNet.
+        Must use PEFT directly — the adapter was saved in PEFT key format,
+        not diffusers/kohya format, so load_lora_weights() won't find any keys.
+        All three pipelines share the same UNet via from_pipe, so one wrap suffices.
+        """
+        from peft import LoraConfig, get_peft_model, set_peft_model_state_dict
+        from peft.tuners.lora import LoraLayer
+        from safetensors.torch import load_file
+
+        self.load()
+        unet = self._pipe_ctrl.unet
+
+        if hasattr(unet, "base_model"):
+            unet.enable_adapter_layers()
+        else:
+            config = LoraConfig(
+                r=8, lora_alpha=16,
+                target_modules=[
+                    "to_q", "to_k", "to_v", "to_out.0",
+                    "add_q_proj", "add_k_proj", "add_v_proj",
+                ],
+                lora_dropout=0.0,
+                bias="none",
+            )
+            unet = get_peft_model(unet, config)
+            self._pipe_ctrl.unet = unet
+            if self._pipe_txt: self._pipe_txt.unet = unet
+            if self._pipe_i2i: self._pipe_i2i.unet = unet
+
+        state_dict = load_file(adapter_path)
+        set_peft_model_state_dict(unet, state_dict)
+
+        for module in unet.modules():
+            if isinstance(module, LoraLayer):
+                for name in module.scaling:
+                    module.scaling[name] = scale
+
+        unet.eval()
+        print(f"  LoRA loaded: {Path(adapter_path).name}  scale={scale}")
+
+    def unload_lora(self):
+        """Disable LoRA layers so subsequent generations use the base model."""
+        unet = self._pipe_ctrl.unet
+        if hasattr(unet, "base_model"):
+            unet.disable_adapter_layers()
+            print("  LoRA disabled")
+
     def unload(self):
         del self._pipe_ctrl, self._pipe_txt, self._pipe_i2i
         self._pipe_ctrl = self._pipe_txt = self._pipe_i2i = None

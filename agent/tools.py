@@ -203,8 +203,8 @@ def generate_images(state: dict) -> dict:
     blend = state.get("style_blend")
     _log("generate", f"Generating for styles: {selected}")
 
-    from generation.prompt_builder import build_all_prompts, build_blend_prompt
-    from generation.local_pipeline import request_generation, _pipeline_instance
+    from generation.prompt_builder import build_all_prompts, build_blend_prompt, get_lora
+    from generation.local_pipeline import request_generation, _get_pipeline
 
     analysis = state.get("room_analysis", {})
 
@@ -217,6 +217,18 @@ def generate_images(state: dict) -> dict:
         prompts = build_all_prompts(analysis, style_preferences=selected)
         prompts = {s: p for s, p in prompts.items() if s in selected}
 
+    # prepend LoRA trigger tokens and load adapters for styles that have one
+    lora_loaded = False
+    for style, prompt_data in prompts.items():
+        lora = get_lora(style)
+        if lora:
+            trigger, adapter_path = lora
+            prompts[style]["positive"] = f"{trigger}, {prompt_data['positive']}"
+            pipe = _get_pipeline()
+            pipe.load_lora(adapter_path)
+            lora_loaded = True
+            _log("generate", f"LoRA active for '{style}' — trigger='{trigger}'")
+
     seed = state.get("seed", 42)
     depth_path = state.get("depth_map_path", "")
 
@@ -227,6 +239,10 @@ def generate_images(state: dict) -> dict:
         variants=["depth"],
         output_dir="data/outputs/agent",
     )
+
+    # unload LoRA after generation so it doesn't bleed into refinement passes
+    if lora_loaded:
+        _get_pipeline().unload_lora()
 
     # keep SDXL loaded for potential img2img refinement in refine_image node
 

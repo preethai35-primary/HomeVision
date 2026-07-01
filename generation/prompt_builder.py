@@ -15,6 +15,26 @@ Run to test:
 
 from __future__ import annotations
 import argparse
+from pathlib import Path
+
+
+# ── LoRA adapter registry ─────────────────────────────────────────────────────
+# Maps style name → (trigger token, adapter path).
+# Add an entry here after training a new adapter.
+# Adapter file must exist at the path; if missing the style generates without LoRA.
+
+LORA_REGISTRY: dict[str, tuple[str, str]] = {
+    "indian vintage": ("IVI", "lora/adapters/indian_vintage.safetensors"),
+}
+
+
+def get_lora(style_name: str) -> tuple[str, str] | None:
+    """Return (trigger, adapter_path) if a trained LoRA exists for this style."""
+    key = style_name.lower().strip()
+    entry = LORA_REGISTRY.get(key)
+    if entry and Path(entry[1]).exists():
+        return entry
+    return None
 
 
 # ── Style prompt vocabulary ───────────────────────────────────────────────────
