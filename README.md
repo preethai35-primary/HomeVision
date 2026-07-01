@@ -6,6 +6,42 @@ Built with: **LangGraph** · **SDXL + ControlNet** · **Depth-Anything v2** · *
 
 ---
 
+## Demo
+
+A single agent session on one room photo — from upload to three redesigns to chat refinement.
+
+**Input room**
+
+![Input room](demo/01_input_room.jpg)
+
+**Depth map** (Depth-Anything V2 — preserves spatial layout for ControlNet)
+
+![Depth map](demo/02_depth_map.png)
+
+**Scandinavian × Modern**
+
+![Scandinavian modern](demo/03_style_scandinavian_modern.png)
+
+**Boho × Mid-Century Modern**
+
+![Boho mid-century](demo/04_style_boho_midcentury.png)
+
+**Indian Contemporary**
+
+![Indian contemporary](demo/05_style_indian_contemporary.png)
+
+**After chat refinement** — "make it warmer, add more plants" (img2img, strength 0.55)
+
+![Refined after chat](demo/06_refined_after_chat.png)
+
+**Gradio UI**
+
+![Gradio UI screenshot](demo/Screenshot%202026-07-01%20at%2013.52.06.png)
+
+> Total API cost for this run: **$0.14**. Generation (SDXL) runs fully locally on Apple MPS — no cloud GPU cost.
+
+---
+
 ## What it does
 
 1. **Analyses your room** — GPT-4o reads the photo and extracts room type, existing furniture, lighting, colour palette, and spatial constraints
@@ -20,16 +56,14 @@ Built with: **LangGraph** · **SDXL + ControlNet** · **Depth-Anything v2** · *
 
 ## System requirements
 
-| | Mac (Apple Silicon) | Linux / Cloud |
-|---|---|---|
-| **GPU** | Apple Silicon M1 / M2 / M3 / M4 | NVIDIA GPU, 8 GB+ VRAM |
-| **RAM** | 16 GB minimum, 24 GB recommended | 16 GB+ system RAM |
-| **Storage** | ~12 GB free (models + index) | ~12 GB free |
-| **Python** | 3.10 – 3.12 | 3.10 – 3.12 |
-| **CUDA** | — | 11.8+ |
+Built and tested on **Apple Silicon (M5 Pro, 24 GB unified memory)** using PyTorch MPS.
 
-> **Windows** is not supported — MPS is unavailable and CUDA path is untested.
-> Generation takes 6–10 min per image on Apple Silicon M2 Pro.
+- Python 3.10 – 3.12
+- ~12 GB free storage (model weights + FAISS index)
+- OpenAI API key (GPT-4o for room analysis and evaluation)
+
+> Linux / NVIDIA CUDA and Windows are untested. The generation pipeline targets MPS — CUDA paths exist in PyTorch and diffusers but have not been validated.
+> Generation takes ~6–10 min per image on M5 Pro.
 
 ---
 
@@ -63,13 +97,26 @@ Typical cost per full run: **$0.05 – $0.15**.
 python scripts/download_models.py
 ```
 
-All weights are cached in `~/.cache/huggingface/hub`. Re-running the app does not re-download.
+Downloads and caches in `~/.cache/huggingface/hub`:
+
+| Model | Size | Purpose |
+|---|---|---|
+| `stabilityai/stable-diffusion-xl-base-1.0` | ~6.5 GB | Image generation |
+| `diffusers/controlnet-depth-sdxl-1.0` | ~2.4 GB | Depth-conditioned generation |
+| `madebyollin/sdxl-vae-fp16-fix` | ~160 MB | Sharper image decoding |
+| `depth-anything/Depth-Anything-V2-Small-hf` | ~100 MB | Depth estimation |
+| `ViT-B-32` (open_clip, openai) | ~350 MB | CLIP evaluation scoring |
+| `all-MiniLM-L6-v2` (sentence-transformers) | ~90 MB | IKEA semantic search |
+
+Re-running the app does not re-download — HuggingFace caches on first use.
 
 ### 4. Build the IKEA product index (~5 min, one-time)
 
+Uses the [`jeffreyszhou/ikea-us-products-2025`](https://huggingface.co/datasets/jeffreyszhou/ikea-us-products-2025) dataset (30,500 products, MIT licence).
+
 ```bash
-python rag/ikea_search.py --download   # downloads 30,500 products (~200 MB)
-python rag/ikea_search.py --build      # embeds + builds FAISS index
+python rag/ikea_search.py --download   # ~200 MB from HuggingFace
+python rag/ikea_search.py --build      # embeds + builds FAISS index (~5 min)
 ```
 
 ### 5. Launch the UI
@@ -87,7 +134,7 @@ python ui/gradio_app.py
 2. Set your **budget** (EUR range, e.g. `500-2000`) and **room type**
 3. Click **Analyse Room** — GPT-4o reads your room, depth map is computed
 4. Review the suggested **styles** and pick one (or blend two)
-5. Click **Generate** — SDXL runs locally (~6–10 min on M2 Pro)
+5. Click **Generate** — SDXL runs locally (~6–10 min on M5 Pro)
 6. View the redesign, CLIP/layout scores, and IKEA recommendations
 7. **Chat** to refine: type instructions like "make the walls warmer" or "add a floor lamp"
 
@@ -250,7 +297,7 @@ OMP_NUM_THREADS=1 TOKENIZERS_PARALLELISM=false python ui/gradio_app.py
 Run the two build commands in step 4 above.
 
 **Generation is slow**
-Expected — SDXL takes 6–10 min per image on M2 Pro with 30 denoising steps.
+Expected — SDXL takes 6–10 min per image on M5 Pro with 30 denoising steps.
 Reduce steps in `generation/local_pipeline.py` (`num_inference_steps=20`) for faster but lower-quality output.
 
 **Out of memory (MPS)**

@@ -19,7 +19,7 @@ Usage:
     --steps   1000
 
 Hardware estimate:
-  Apple M2 Pro  — ~2.5-3 h for 1000 steps at 1024x1024
+  Apple M5 Pro  — ~2.5-3 h for 1000 steps at 1024x1024
   NVIDIA 8 GB   — ~40 min for 1000 steps
 """
 

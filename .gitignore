@@ -3,18 +3,22 @@ __pycache__/
 *.pyc
 .env
 
-# generated images
+# generated images (excluded everywhere except demo/)
 *.jpg
 *.png
 *.jpeg
+!demo/*.jpg
+!demo/*.png
 data/outputs/
 data/interior_images/
 data/colab_jobs/
 
-# model weights
+# model weights and trained adapters
 *.safetensors
 *.ckpt
 *.bin
+lora/adapters/
+lora/*/captions.json
 
 # FAISS indices and IKEA catalogue (rebuilt locally by setup script)
 *.faiss
@@ -28,4 +32,5 @@ data/agent_state.db
 data/agent_state.db-shm
 data/agent_state.db-wal
 
+demo/README.md
 .DS_Store
